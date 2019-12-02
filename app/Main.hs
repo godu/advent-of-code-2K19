@@ -1,6 +1,7 @@
 module Main where
 
-import Day01
+import qualified Day01 as D01
+import qualified Day02 as D02
 
 run :: String -> String -> (String -> Int) -> IO ()
 run day part process = do
@@ -11,5 +12,7 @@ run day part process = do
 
 main :: IO ()
 main = do
-  run "01" "A" partA
-  run "01" "B" partB
+  run "01" "A" D01.partA
+  run "01" "B" D01.partB
+  run "02" "A" D02.partA
+  run "02" "B" D02.partB
