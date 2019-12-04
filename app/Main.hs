@@ -3,6 +3,7 @@ module Main where
 import qualified Day01 as D01
 import qualified Day02 as D02
 import qualified Day03 as D03
+import qualified Day04 as D04
 
 run :: String -> String -> (String -> Int) -> IO ()
 run day part process = do
@@ -19,3 +20,5 @@ main = do
   run "02" "B" D02.partB
   run "03" "A" D03.partA
   run "03" "B" D03.partB
+  run "04" "A" D04.partA
+  run "04" "B" D04.partB
