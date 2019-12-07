@@ -1,91 +1,131 @@
-module Day05
-  ( partA
-  , partB
-  , runProgram
-  ) where
+module Day05 where
 
-import Data.List (find, genericIndex, head, tail)
+import Data.List (find, genericIndex, head, tail, unfoldr)
 import Data.List.Extra (splitOn)
-import Day04 (toDigits)
 
-type Memory = [Int]
+data Program =
+  Program
+    { memory :: [Int]
+    , position :: Int
+    , inputs :: [Int]
+    , outputs :: [Int]
+    }
+  deriving (Show, Eq)
 
-type Position = Int
+getMemory = memory
 
-type Input = Int
+data Mode_
+  = Position
+  | Immediate
 
-type Output = Int
+toProgram :: [Int] -> [Int] -> Program
+toProgram memory inputs =
+  Program {memory = memory, inputs = inputs, outputs = [], position = 0}
 
-type Mode = Int
-
-runProgram :: Memory -> [Input] -> [Output]
-runProgram memory inputs = go memory inputs 0
+runProgram :: Program -> [Program]
+runProgram = unfoldr step
   where
-    go :: Memory -> [Input] -> Position -> [Output]
-    go memory inputs position =
-      case toDigits (index position memory) <> [0, 0, 0] of
-        (1:0:x:y:_) ->
-          go (addition (x, y) memory position) inputs (position + 4)
-        (2:0:x:y:_) ->
-          go (multiplication (x, y) memory position) inputs (position + 4)
-        (3:0:_) ->
-          go (scan memory (head inputs) position) (tail inputs) (position + 2)
-        (4:0:x:_) -> print x memory position : go memory inputs (position + 2)
-        (5:0:x:y:_) ->
-          (\(position, memory) -> go memory inputs position) $
-          true (x, y) memory position
-        (6:0:x:y:_) ->
-          (\(position, memory) -> go memory inputs position) $
-          false (x, y) memory position
-        (7:0:x:y:_) -> go (less (x, y) memory position) inputs (position + 4)
-        (8:0:x:y:_) -> go (equals (x, y) memory position) inputs (position + 4)
-        _ -> []
-    getValue :: Mode -> Position -> Memory -> Int
-    getValue 0 position memory = index (index position memory) memory
-    getValue 1 position memory = index position memory
-    addition :: (Mode, Mode) -> Memory -> Position -> Memory
-    addition (x, y) memory position =
-      update
-        (index (position + 3) memory)
-        (getValue x (position + 1) memory + getValue y (position + 2) memory)
-        memory
-    multiplication :: (Mode, Mode) -> Memory -> Position -> Memory
-    multiplication (x, y) memory position =
-      update
-        (index (position + 3) memory)
-        (getValue x (position + 1) memory * getValue y (position + 2) memory)
-        memory
-    true :: (Mode, Mode) -> Memory -> Position -> (Position, Memory)
-    true (x, y) memory position =
-      if getValue x (position + 1) memory == 0
-        then (position + 3, memory)
-        else (getValue y (position + 2) memory, memory)
-    false :: (Mode, Mode) -> Memory -> Position -> (Position, Memory)
-    false (x, y) memory position =
-      if getValue x (position + 1) memory == 0
-        then (getValue y (position + 2) memory, memory)
-        else (position + 3, memory)
-    less :: (Mode, Mode) -> Memory -> Position -> Memory
-    less (x, y) memory position =
-      update
-        (index (position + 3) memory)
-        (if getValue x (position + 1) memory < getValue y (position + 2) memory
-           then 1
-           else 0)
-        memory
-    equals :: (Mode, Mode) -> Memory -> Position -> Memory
-    equals (x, y) memory position =
-      update
-        (index (position + 3) memory)
-        (if getValue x (position + 1) memory == getValue y (position + 2) memory
-           then 1
-           else 0)
-        memory
-    scan :: Memory -> Input -> Position -> Memory
-    scan memory input position =
-      update (index (position + 1) memory) input memory
-    print :: Mode -> Memory -> Position -> Output
-    print mode memory position = getValue mode (position + 1) memory
+    step program =
+      case getOpCode program of
+        1 -- +
+         ->
+          return $
+          toTuple $
+          forward 4 $
+          write
+            (getArgumentAdress 3 program)
+            (read (getArgumentAdress 1 program) program +
+             read (getArgumentAdress 2 program) program)
+            program
+        2 -- *
+         ->
+          return $
+          toTuple $
+          forward 4 $
+          write
+            (getArgumentAdress 3 program)
+            (read (getArgumentAdress 1 program) program *
+             read (getArgumentAdress 2 program) program)
+            program
+        3 -- scan
+         ->
+          return $
+          toTuple $
+          forward 2 $
+          write (getArgumentAdress 1 program) (head $ inputs program) $
+          program {inputs = tail $ inputs program}
+        4 -- print
+         ->
+          return $
+          toTuple $
+          forward 2 $
+          program
+            { outputs =
+                read (getArgumentAdress 1 program) program : outputs program
+            }
+        5 -- jump if true
+         ->
+          return $
+          toTuple $
+          if read (getArgumentAdress 1 program) program /= 0
+            then program {position = read (getArgumentAdress 2 program) program}
+            else forward 3 program
+        6 -- jump if false
+         ->
+          return $
+          toTuple $
+          if read (getArgumentAdress 1 program) program == 0
+            then program {position = read (getArgumentAdress 2 program) program}
+            else forward 3 program
+        7 -- <
+         ->
+          return $
+          toTuple $
+          forward 4 $
+          write
+            (getArgumentAdress 3 program)
+            (if read (getArgumentAdress 1 program) program <
+                read (getArgumentAdress 2 program) program
+               then 1
+               else 0)
+            program
+        8 -- ==
+         ->
+          return $
+          toTuple $
+          forward 4 $
+          write
+            (getArgumentAdress 3 program)
+            (if read (getArgumentAdress 1 program) program ==
+                read (getArgumentAdress 2 program) program
+               then 1
+               else 0)
+            program
+        99 -> Nothing
+    toTuple :: a -> (a, a)
+    toTuple a = (a, a)
+    read :: Int -> Program -> Int
+    read adress program = index adress (memory program)
+    write :: Int -> Int -> Program -> Program
+    write adress value program =
+      program {memory = update adress value (memory program)}
+    forward :: Int -> Program -> Program
+    forward n program = program {position = position program + n}
+    getOpCode :: Program -> Int
+    getOpCode program = index (position program) (memory program) `mod` 100
+    getMode :: Int -> Program -> Mode_
+    getMode n program =
+      case (`mod` 10) $
+           (`div` (10 ^ (n + 1))) $ index (position program) (memory program) of
+        0 -> Position
+        _ -> Immediate
+    getArgumentAdress :: Int -> Program -> Int
+    getArgumentAdress n program =
+      case getMode n program of
+        Position -> read argumentPosition program
+        Immediate -> argumentPosition
+      where
+        argumentPosition = position program + n
 
 index :: Int -> [a] -> a
 index i xs = genericIndex xs i
@@ -95,11 +135,13 @@ update 0 x (head:tail) = x : tail
 update i x (head:tail) = head : update (i - 1) x tail
 
 partA :: String -> Int
-partA input = sum $ runProgram memory [1]
+partA input = sum $ outputs $ last $ runProgram program
   where
     memory = map read $ splitOn "," input
+    program = toProgram memory [1]
 
 partB :: String -> Int
-partB input = sum $ runProgram memory [5]
+partB input = sum $ outputs $ last $ runProgram program
   where
     memory = map read $ splitOn "," input
+    program = toProgram memory [5]
