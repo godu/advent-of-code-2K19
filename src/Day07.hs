@@ -1,7 +1,7 @@
 module Day07 where
 
 import Data.List
-import Data.List.Extra (splitOn)
+import Data.List.Extra
 import qualified Data.Maybe as O
 import Day05
 
@@ -10,7 +10,7 @@ runAmplifiers memory = foldl (step memory)
   where
     step :: [Int] -> [Int] -> Int -> [Int]
     step memory input setting =
-      outputs $ last $ runProgram $ toProgram memory (setting : input)
+      O.mapMaybe output (runProgram $ toProgram memory (setting : input))
 
 partA :: String -> Int
 partA input = maximum (sum . runAmplifiers memory [0] <$> permutations [0 .. 4])

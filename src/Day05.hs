@@ -1,14 +1,15 @@
 module Day05 where
 
-import Data.List (find, genericIndex, head, tail, unfoldr)
-import Data.List.Extra (splitOn)
+import Data.List
+import Data.List.Extra
+import Data.Maybe
 
 data Program =
   Program
     { memory :: [Int]
     , position :: Int
     , inputs :: [Int]
-    , outputs :: [Int]
+    , output :: Maybe Int
     }
   deriving (Show, Eq)
 
@@ -20,11 +21,12 @@ data Mode_
 
 toProgram :: [Int] -> [Int] -> Program
 toProgram memory inputs =
-  Program {memory = memory, inputs = inputs, outputs = [], position = 0}
+  Program {memory = memory, inputs = inputs, output = Nothing, position = 0}
 
 runProgram :: Program -> [Program]
-runProgram = unfoldr step
+runProgram = unfoldr (step . resetOutput)
   where
+    resetOutput program = program {output = Nothing}
     step program =
       case getOpCode program of
         1 -- +
@@ -59,10 +61,7 @@ runProgram = unfoldr step
           return $
           toTuple $
           forward 2 $
-          program
-            { outputs =
-                outputs program <> [read (getArgumentAdress 1 program) program]
-            }
+          program {output = return (read (getArgumentAdress 1 program) program)}
         5 -- jump if true
          ->
           return $
@@ -135,13 +134,13 @@ update 0 x (head:tail) = x : tail
 update i x (head:tail) = head : update (i - 1) x tail
 
 partA :: String -> Int
-partA input = sum $ outputs $ last $ runProgram program
+partA input = sum $ catMaybes $ output <$> runProgram program
   where
     memory = map read $ splitOn "," input
     program = toProgram memory [1]
 
 partB :: String -> Int
-partB input = sum $ outputs $ last $ runProgram program
+partB input = sum $ catMaybes $ output <$> runProgram program
   where
     memory = map read $ splitOn "," input
     program = toProgram memory [5]
