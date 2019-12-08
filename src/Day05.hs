@@ -61,7 +61,7 @@ runProgram = unfoldr step
           forward 2 $
           program
             { outputs =
-                read (getArgumentAdress 1 program) program : outputs program
+                outputs program <> [read (getArgumentAdress 1 program) program]
             }
         5 -- jump if true
          ->
