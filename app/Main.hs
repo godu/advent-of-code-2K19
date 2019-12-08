@@ -1,5 +1,6 @@
 module Main where
 
+import Data.List.Extra
 import qualified Day01 as D01
 import qualified Day02 as D02
 import qualified Day03 as D03
@@ -7,11 +8,14 @@ import qualified Day04 as D04
 import qualified Day05 as D05
 import qualified Day06 as D06
 import qualified Day07 as D07
+import qualified Day08 as D08
 
 run :: String -> String -> (String -> Int) -> IO ()
 run day part process = do
   fixtures <- readFile fileName
-  print ("day " <> day <> " part " <> part <> " : " <> show (process fixtures))
+  print
+    ("day " <>
+     day <> " part " <> part <> " : " <> show (process $ trim fixtures))
   where
     fileName = "fixtures/day" <> day <> part <> ".txt"
 
@@ -31,3 +35,5 @@ main = do
   run "06" "B" D06.partB
   run "07" "A" D07.partA
   run "07" "B" D07.partB
+  run "08" "A" D08.partA
+  run "08" "B" D08.partB
