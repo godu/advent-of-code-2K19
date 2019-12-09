@@ -8,6 +8,7 @@ data Program =
   Program
     { memory :: [Int]
     , position :: Int
+    , relativeBase :: Int
     , inputs :: [Int]
     , output :: Maybe Int
     }
@@ -18,10 +19,11 @@ getMemory = memory
 data Mode_
   = Position
   | Immediate
+  | Relative
 
 toProgram :: [Int] -> [Int] -> Program
 toProgram memory inputs =
-  Program {memory = memory, inputs = inputs, output = Nothing, position = 0}
+  Program {memory = memory, inputs = inputs, output = Nothing, position = 0, relativeBase = 0}
 
 runProgram :: Program -> [Program]
 runProgram = unfoldr (step . resetOutput)
@@ -100,6 +102,15 @@ runProgram = unfoldr (step . resetOutput)
                then 1
                else 0)
             program
+        9 ->
+          return $
+          toTuple $
+          forward 2 $
+          program{
+            relativeBase
+              = read (getArgumentAdress 1 program) program
+              + relativeBase program
+          }
         99 -> Nothing
     toTuple :: a -> (a, a)
     toTuple a = (a, a)
@@ -117,21 +128,27 @@ runProgram = unfoldr (step . resetOutput)
       case (`mod` 10) $
            (`div` (10 ^ (n + 1))) $ index (position program) (memory program) of
         0 -> Position
-        _ -> Immediate
+        1 -> Immediate
+        2 -> Relative
     getArgumentAdress :: Int -> Program -> Int
     getArgumentAdress n program =
       case getMode n program of
         Position -> read argumentPosition program
         Immediate -> argumentPosition
+        Relative -> read argumentPosition program + relativeBase program
       where
         argumentPosition = position program + n
 
-index :: Int -> [a] -> a
-index i xs = genericIndex xs i
+index :: Int -> [Int] -> Int
+index _ [] = 0
+index 0 (head:_) = head
+index x (_:tail) = index (x - 1) tail
 
-update :: Int -> a -> [a] -> [a]
+update :: Int -> Int -> [Int] -> [Int]
 update 0 x (head:tail) = x : tail
 update i x (head:tail) = head : update (i - 1) x tail
+update 0 x [] = [x]
+update i x [] = 0 : update (i - 1) x []
 
 partA :: String -> Int
 partA input = sum $ catMaybes $ output <$> runProgram program
