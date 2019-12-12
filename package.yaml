@@ -23,6 +23,7 @@ dependencies:
   - base >= 4.7 && < 5
   - extra
   - containers
+  - groups
 
 library:
   source-dirs: src
@@ -35,6 +36,7 @@ executables:
       - -threaded
       - -rtsopts
       - -with-rtsopts=-N
+      - -XTupleSections
     dependencies:
       - advent-of-code-2k19
 
@@ -46,6 +48,8 @@ tests:
       - -threaded
       - -rtsopts
       - -with-rtsopts=-N
+      - -XLambdaCase
+      - -XTupleSections
     dependencies:
       - advent-of-code-2k19
       - hspec
