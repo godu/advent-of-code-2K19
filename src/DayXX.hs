@@ -1,7 +1,4 @@
-module DayXX
-  ( partA
-  , partB
-  ) where
+module DayXX where
 
 partA :: String -> Int
 partA input = undefined

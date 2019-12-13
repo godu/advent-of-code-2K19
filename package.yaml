@@ -24,6 +24,8 @@ dependencies:
   - extra
   - containers
   - groups
+  - regex-tdfa
+  - regex-tdfa-text
 
 library:
   source-dirs: src
