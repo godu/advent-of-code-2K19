@@ -15,6 +15,7 @@ import qualified Day11 as D11
 import qualified Day12 as D12
 import qualified Day14 as D14
 import qualified Day16 as D16
+import qualified Day19 as D19
 
 run :: String -> String -> (String -> Int) -> IO ()
 run day part process = do
@@ -55,3 +56,5 @@ main = do
   run "14" "B" D14.partB
   run "16" "A" D16.partA
   -- run "16" "B" D16.partB
+  run "19" "A" D19.partA
+  -- run "19" "B" D19.partB
