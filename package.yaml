@@ -26,6 +26,7 @@ dependencies:
   - groups
   - regex-tdfa
   - regex-tdfa-text
+  - vector
 
 library:
   source-dirs: src

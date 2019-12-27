@@ -3,11 +3,13 @@ module Day02 where
 import Data.List (find, genericIndex, head, tail, unfoldr)
 import Data.List.Extra (splitOn)
 import Day05 (getMemory, runProgram, toProgram, update)
+import qualified Data.Vector as Vector
 
 partA :: String -> Int
 partA input = head $ getMemory $ last $ runProgram program
   where
-    memory = update 2 2 $ update 1 12 $ map read $ splitOn "," input
+    memory :: [Int]
+    memory = Vector.toList $ update 2 2 $ update 1 12 $ Vector.fromList $ map read $ splitOn "," input
     program = toProgram memory []
 
 cartProd :: [Int] -> [Int] -> [(Int, Int)]
@@ -27,4 +29,4 @@ partB input =
     try x y z =
       (==) z .
       head .
-      getMemory . last . runProgram . (`toProgram` []) . update 2 y . update 1 x
+      getMemory . last . runProgram . (`toProgram` []) . Vector.toList . update 2 y . update 1 x . Vector.fromList

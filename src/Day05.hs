@@ -3,10 +3,12 @@ module Day05 where
 import Data.List
 import Data.List.Extra
 import Data.Maybe
+import qualified Data.Vector as Vector
+import Debug.Trace
 
 data Program =
   Program
-    { memory :: [Int]
+    { memory :: Vector.Vector Int
     , position :: Int
     , relativeBase :: Int
     , inputs :: [Int]
@@ -14,7 +16,7 @@ data Program =
     }
   deriving (Show, Eq)
 
-getMemory = memory
+getMemory = Vector.toList . memory
 
 data Mode_
   = Position
@@ -23,7 +25,7 @@ data Mode_
 
 toProgram :: [Int] -> [Int] -> Program
 toProgram memory inputs =
-  Program {memory = memory, inputs = inputs, output = Nothing, position = 0, relativeBase = 0}
+  Program {memory = Vector.fromList memory, inputs = inputs, output = Nothing, position = 0, relativeBase = 0}
 
 runProgram :: Program -> [Program]
 runProgram = unfoldr (step . resetOutput)
@@ -139,16 +141,18 @@ runProgram = unfoldr (step . resetOutput)
       where
         argumentPosition = position program + n
 
-index :: Int -> [Int] -> Int
-index _ [] = 0
-index 0 (head:_) = head
-index x (_:tail) = index (x - 1) tail
+index :: Int -> Vector.Vector Int -> Int
+index x v = fromMaybe 0 $ v Vector.!? x
 
-update :: Int -> Int -> [Int] -> [Int]
-update 0 x (head:tail) = x : tail
-update i x (head:tail) = head : update (i - 1) x tail
-update 0 x [] = [x]
-update i x [] = 0 : update (i - 1) x []
+update :: Int -> Int -> Vector.Vector Int -> Vector.Vector Int
+update adress value memory
+  | adress < Vector.length memory = Vector.update memory $ Vector.fromList [(adress, value)]
+  | otherwise = Vector.concat
+    [
+      memory,
+      Vector.replicate (adress - Vector.length memory) 0,
+      Vector.singleton value
+    ]
 
 partA :: String -> Int
 partA input = sum $ catMaybes $ output <$> runProgram program

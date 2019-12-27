@@ -5,10 +5,10 @@ import Test.Hspec
 
 spec :: Spec
 spec = do
-  it "basePattern" $ do
-    take 8 (basePattern 1) `shouldBe` [1, 0, -1, 0, 1, 0, -1, 0]
-    take 8 (basePattern 2) `shouldBe` [0, 1, 1, 0, 0, -1, -1, 0]
-    take 8 (basePattern 3) `shouldBe` [0, 0, 1, 1, 1, 0, 0, 0]
+  -- it "basePattern" $ do
+  --   take 8 (basePattern 1) `shouldBe` [1, 0, -1, 0, 1, 0, -1, 0]
+  --   take 8 (basePattern 2) `shouldBe` [0, 1, 1, 0, 0, -1, -1, 0]
+  --   take 8 (basePattern 3) `shouldBe` [0, 0, 1, 1, 1, 0, 0, 0]
   it "phase" $ do
     phase [1, 2, 3, 4, 5, 6, 7, 8] `shouldBe` [4, 8, 2, 2, 6, 1, 5, 8]
     phase [4, 8, 2, 2, 6, 1, 5, 8] `shouldBe` [3, 4, 0, 4, 0, 4, 3, 8]

@@ -61,47 +61,47 @@ getPrograms memory inputs = runProgram $ toProgram memory inputs
 spec :: Spec
 spec = do
   it "runProgram#addition" $ do
-    memory (last (getPrograms [1, 0, 0, 0, 99] [])) `shouldBe` [2, 0, 0, 0, 99]
-    memory (last (getPrograms [1, 1, 1, 4, 99, 5, 6, 0, 99] [])) `shouldBe`
+    getMemory (last (getPrograms [1, 0, 0, 0, 99] [])) `shouldBe` [2, 0, 0, 0, 99]
+    getMemory (last (getPrograms [1, 1, 1, 4, 99, 5, 6, 0, 99] [])) `shouldBe`
       [30, 1, 1, 4, 2, 5, 6, 0, 99]
-    memory (last (getPrograms [1, 0, 0, 0, 99] [])) `shouldBe` [2, 0, 0, 0, 99]
-    memory (last (getPrograms [101, 3, 0, 0, 99] [])) `shouldBe`
+    getMemory (last (getPrograms [1, 0, 0, 0, 99] [])) `shouldBe` [2, 0, 0, 0, 99]
+    getMemory (last (getPrograms [101, 3, 0, 0, 99] [])) `shouldBe`
       [104, 3, 0, 0, 99]
   it "runProgram#multiplication" $ do
-    memory (last (getPrograms [2, 3, 0, 3, 99] [])) `shouldBe` [2, 3, 0, 6, 99]
-    memory (last (getPrograms [2, 4, 4, 5, 99, 0] [])) `shouldBe`
+    getMemory (last (getPrograms [2, 3, 0, 3, 99] [])) `shouldBe` [2, 3, 0, 6, 99]
+    getMemory (last (getPrograms [2, 4, 4, 5, 99, 0] [])) `shouldBe`
       [2, 4, 4, 5, 99, 9801]
   it "runProgram#outputs" $ do
     mapMaybe output (getPrograms [1, 0, 0, 0, 4, 0, 99] []) `shouldBe` [2]
     mapMaybe output (getPrograms [101, 3, 0, 0, 4, 0, 99] []) `shouldBe` [104]
   it "runProgram#inputs" $ do
     inputs (last (getPrograms [3, 0, 99] [42])) `shouldBe` []
-    memory (last (getPrograms [3, 0, 99] [42])) `shouldBe` [42, 0, 99]
+    getMemory (last (getPrograms [3, 0, 99] [42])) `shouldBe` [42, 0, 99]
   it "runProgram#equals" $ do
-    memory (last (getPrograms [8, 5, 6, 5, 99, 7, 8] [])) `shouldBe`
+    getMemory (last (getPrograms [8, 5, 6, 5, 99, 7, 8] [])) `shouldBe`
       [8, 5, 6, 5, 99, 0, 8]
-    memory (last (getPrograms [8, 5, 6, 5, 99, 8, 8] [])) `shouldBe`
+    getMemory (last (getPrograms [8, 5, 6, 5, 99, 8, 8] [])) `shouldBe`
       [8, 5, 6, 5, 99, 1, 8]
-    memory (last (getPrograms [8, 5, 6, 5, 99, 9, 8] [])) `shouldBe`
+    getMemory (last (getPrograms [8, 5, 6, 5, 99, 9, 8] [])) `shouldBe`
       [8, 5, 6, 5, 99, 0, 8]
-    memory (last (getPrograms [1108, 7, 8, 1, 99] [])) `shouldBe`
+    getMemory (last (getPrograms [1108, 7, 8, 1, 99] [])) `shouldBe`
       [1108, 0, 8, 1, 99]
-    memory (last (getPrograms [1108, 8, 8, 1, 99] [])) `shouldBe`
+    getMemory (last (getPrograms [1108, 8, 8, 1, 99] [])) `shouldBe`
       [1108, 1, 8, 1, 99]
-    memory (last (getPrograms [1108, 9, 8, 1, 99] [])) `shouldBe`
+    getMemory (last (getPrograms [1108, 9, 8, 1, 99] [])) `shouldBe`
       [1108, 0, 8, 1, 99]
   it "runProgram#less" $ do
-    memory (last (getPrograms [7, 5, 6, 5, 99, 7, 8] [])) `shouldBe`
+    getMemory (last (getPrograms [7, 5, 6, 5, 99, 7, 8] [])) `shouldBe`
       [7, 5, 6, 5, 99, 1, 8]
-    memory (last (getPrograms [7, 5, 6, 5, 99, 8, 8] [])) `shouldBe`
+    getMemory (last (getPrograms [7, 5, 6, 5, 99, 8, 8] [])) `shouldBe`
       [7, 5, 6, 5, 99, 0, 8]
-    memory (last (getPrograms [7, 5, 6, 5, 99, 9, 8] [])) `shouldBe`
+    getMemory (last (getPrograms [7, 5, 6, 5, 99, 9, 8] [])) `shouldBe`
       [7, 5, 6, 5, 99, 0, 8]
-    memory (last (getPrograms [1107, 7, 8, 1, 99] [])) `shouldBe`
+    getMemory (last (getPrograms [1107, 7, 8, 1, 99] [])) `shouldBe`
       [1107, 1, 8, 1, 99]
-    memory (last (getPrograms [1107, 8, 8, 1, 99] [])) `shouldBe`
+    getMemory (last (getPrograms [1107, 8, 8, 1, 99] [])) `shouldBe`
       [1107, 0, 8, 1, 99]
-    memory (last (getPrograms [1107, 9, 8, 1, 99] [])) `shouldBe`
+    getMemory (last (getPrograms [1107, 9, 8, 1, 99] [])) `shouldBe`
       [1107, 0, 8, 1, 99]
   it "runProgram#jumpIfTrue" $ do
     mapMaybe output (getPrograms [1105, 0, 5, 104, 42, 99] []) `shouldBe` [42]
