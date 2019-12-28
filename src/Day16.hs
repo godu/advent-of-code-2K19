@@ -2,16 +2,20 @@ module Day16 where
 
 import Data.List
 
-basePattern :: Int -> [Int -> Int]
-basePattern position = tail $ cycle $ concatMap (replicate position) [const 0, id, const 0, negate]
+applyPattern :: Int -> [Int] -> [Int]
+applyPattern position = zipWith (\f x -> f x) pattern_ 
+    where
+        pattern_ :: [Int -> Int]
+        pattern_ = drop (position + 1) $ cycle $ concatMap (replicate (position + 1)) [const 0, id, const 0, negate]
+
+toDigit :: Int -> Int
+toDigit = (`mod` 10) . abs
 
 phase :: [Int] -> [Int]
-phase inputs = phase_ 1 inputs
-    where
-        phase_ :: Int -> [Int] -> [Int]
-        phase_ _ [] = []
-        phase_ position (head: tail) = ((`mod` 10) $ abs $ sum $ drop (position - 1) $ zipWith (\x f -> f x) inputs $ basePattern position ): phase_ (position + 1) tail
-
+phase signal = zipWith (\i xs -> toDigit $ sum $ applyPattern i xs) [0..] tails_
+        where
+            tails_ :: [[Int]]
+            tails_ = take (length signal) $ tails signal
 
 parseInput :: String -> [Int]
 parseInput = fmap (read . (:[]))
@@ -28,6 +32,6 @@ partB :: String -> Int
 partB str = solution
     where
         inputs = parseInput str
-        outputs = (!! 99) $ unfoldr step $ concat $ replicate 4 inputs
+        outputs = (!! 1) $ unfoldr step $ concat $ replicate 10000 inputs
         offset = toInt $ take 7 outputs
         solution = toInt $ take 8 $ drop offset outputs
